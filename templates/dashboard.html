@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TrendBot Panel</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
+    
+    <style>
+        body { background-color: #151521; color: #ffffff; font-family: 'Poppins', sans-serif; }
+        
+        .sidebar { width: 260px; height: 100vh; position: fixed; background-color: #1e1e2d; border-right: 1px solid rgba(255,255,255,0.05); padding: 20px; }
+        .nav-link { color: #a1a5b7; margin-bottom: 5px; transition: 0.3s; }
+        .nav-link:hover, .nav-link.active { background-color: rgba(0, 158, 247, 0.1); color: #009ef7; border-radius: 8px; }
+        
+        .main-content { margin-left: 260px; padding: 30px; padding-bottom: 60px; }
+        .card { background-color: #1e1e2d; border: none; border-radius: 12px; margin-bottom: 20px; box-shadow: 0 0 20px rgba(0,0,0,0.2); }
+        .card-header { border-bottom: 1px solid rgba(255,255,255,0.05); color: #fff; font-weight: 600; padding: 20px; }
+        
+        .console-area { height: 350px; overflow-y: auto; background: #000; color: #00ff88; font-family: 'JetBrains Mono', monospace; padding: 15px; font-size: 13px; border-radius: 0 0 12px 12px; }
+        
+        .status-label { color: #a1a5b7; font-size: 1.1rem; margin-bottom: 5px; }
+        .status-value { font-size: 2rem; font-weight: 700; letter-spacing: 1px; }
+
+        .developer-badge {
+            position: fixed;
+            bottom: 20px;
+            right: 30px;
+            background: rgba(30, 30, 45, 0.9);
+            border: 1px solid rgba(255,255,255,0.1);
+            padding: 10px 25px;
+            border-radius: 50px;
+            font-size: 0.9rem;
+            color: #a1a5b7;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            backdrop-filter: blur(5px);
+            transition: all 0.3s ease;
+            z-index: 1000;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            cursor: default;
+        }
+
+        .developer-badge:hover {
+            border-color: #009ef7;
+            color: #fff;
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0, 158, 247, 0.2);
+        }
+
+        .developer-badge i { color: #009ef7; }
+        
+        .dev-name {
+            font-weight: 700;
+            background: linear-gradient(45deg, #009ef7, #00d4ff);
+            -webkit-background-clip: text;
+            background-clip: text; 
+            -webkit-text-fill-color: transparent;
+            letter-spacing: 1px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="sidebar">
+        <div class="d-flex align-items-center gap-2 mb-5 text-white">
+            <i class="fas fa-robot fa-2x text-primary"></i>
+            <h3 class="m-0 fw-bold">TrendBot</h3>
+        </div>
+        <nav class="nav flex-column">
+            <a class="nav-link active" href="#"><i class="fas fa-home me-2"></i> Dashboard</a>
+        </nav>
+    </div>
+
+    <div class="main-content">
+        <h3 class="mb-4">Kontrol Paneli</h3>
+
+        <div class="row">
+            <div class="col-lg-6">
+                <div class="card h-100">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <span>Bot Durumu</span>
+                        <span id="status-badge" class="badge bg-secondary">Bağlanıyor...</span>
+                    </div>
+                    <div class="card-body text-center py-5">
+                        <div id="status-icon" class="mb-4">
+                            <i class="fas fa-power-off fa-5x" style="color: #323248;"></i>
+                        </div>
+                        
+                        <div class="mb-5">
+                            <div class="status-label">MEVCUT DURUM</div>
+                            <div id="status-text" class="status-value text-white">KAPALI</div>
+                        </div>
+
+                        <div class="d-flex justify-content-center gap-3">
+                            <button onclick="controlBot('start')" class="btn btn-success btn-lg px-5 rounded-pill fw-bold">
+                                <i class="fas fa-play me-2"></i> BAŞLAT
+                            </button>
+                            <button onclick="controlBot('stop')" class="btn btn-danger btn-lg px-5 rounded-pill fw-bold">
+                                <i class="fas fa-stop me-2"></i> DURDUR
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-6">
+                <div class="card h-100">
+                    <div class="card-header"><i class="fas fa-terminal me-2"></i> Sistem Logları</div>
+                    <div class="card-body p-0">
+                        <div id="console-log" class="console-area">
+                            > [Sistem] Panel hazır.<br>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="developer-badge">
+        <i class="fas fa-code"></i>
+        <span>Developed by <span class="dev-name">JACKON</span></span>
+    </div>
+
+    <script>
+        function addLog(msg) {
+            const log = document.getElementById('console-log');
+            const time = new Date().toLocaleTimeString();
+            log.innerHTML += `> <span style="opacity:0.5">[${time}]</span> ${msg}<br>`;
+            log.scrollTop = log.scrollHeight;
+        }
+
+        async function controlBot(action) {
+            try {
+                addLog(`Komut: ${action}...`);
+                const res = await fetch(`/api/${action}`, {method: 'POST'});
+                const data = await res.json();
+                
+                let color = data.status === 'success' ? '#50cd89' : '#f1416c';
+                addLog(`<span style="color:${color}">${data.message}</span>`);
+                
+                checkStatus();
+            } catch(e) {
+                addLog("<span style='color:#f1416c'>Hata: Sunucuya ulaşılamadı!</span>");
+            }
+        }
+
+        async function checkStatus() {
+            try {
+                const res = await fetch('/api/status');
+                const data = await res.json();
+                
+                const badge = document.getElementById('status-badge');
+                const text = document.getElementById('status-text');
+                const icon = document.getElementById('status-icon');
+                
+                if(data.running) {
+                    badge.className = 'badge bg-success'; badge.innerText = 'AKTİF';
+                    text.innerText = 'ÇALIŞIYOR';
+                    text.style.color = '#50cd89';
+                    text.style.textShadow = '0 0 15px rgba(80, 205, 137, 0.4)';
+                    icon.innerHTML = '<i class="fas fa-robot fa-5x" style="color: #50cd89; text-shadow: 0 0 20px rgba(80,205,137,0.5);"></i>';
+                } else {
+                    badge.className = 'badge bg-danger'; badge.innerText = 'KAPALI';
+                    text.innerText = 'DURDURULDU';
+                    text.style.color = '#f1416c';
+                    text.style.textShadow = 'none';
+                    icon.innerHTML = '<i class="fas fa-power-off fa-5x" style="color: #323248;"></i>';
+                }
+            } catch(e) { console.log("Status check failed"); }
+        }
+
+        setInterval(checkStatus, 2000);
+        checkStatus();
+    </script>
+</body>
+</html>
